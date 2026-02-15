@@ -50,15 +50,24 @@ const config: Config = {
                     DEFAULT: "hsl(var(--card))",
                     foreground: "hsl(var(--card-foreground))",
                 },
-                // Custom Brand Colors
+                // Custom Brand Colors - Premium Nonprofit Theme
+                nonprofit: {
+                    blue: "#0B3566", // Deeper navy for headings
+                    "blue-light": "#F3F8FC", // Blue-tinted background
+                },
+                warm: {
+                    accent: "#F29B4B", // Softer orange
+                },
+                // Legacy colors (kept for compatibility)
                 sunrise: {
-                    orange: "#F4A261",
+                    orange: "#F29B4B", // Updated to match warm accent
                 },
                 navy: {
-                    deep: "#1D3557",
+                    deep: "#0B3566", // Updated to match nonprofit blue
                 },
                 light: {
                     gray: "#F8F9FA",
+                    blue: "#F3F8FC", // Blue-tinted background
                 },
                 text: {
                     dark: "#2B2D42",
@@ -83,22 +92,22 @@ const config: Config = {
                     css: {
                         color: '#2B2D42',
                         a: {
-                            color: '#F4A261',
+                            color: '#F29B4B',
                             '&:hover': {
-                                color: '#1D3557',
+                                color: '#0B3566',
                             },
                         },
                         h1: {
-                            color: '#1D3557',
+                            color: '#0B3566',
                         },
                         h2: {
-                            color: '#1D3557',
+                            color: '#0B3566',
                         },
                         h3: {
-                            color: '#1D3557',
+                            color: '#0B3566',
                         },
                         strong: {
-                            color: '#1D3557',
+                            color: '#0B3566',
                         },
                     },
                 },

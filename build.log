@@ -5,7 +5,7 @@
 ▲ Next.js 16.1.6 (Turbopack)
 
   Creating an optimized production build ...
-✓ Compiled successfully in 8.2s
+✓ Compiled successfully in 7.8s
   Running TypeScript ...
   Collecting page data using 7 workers ...
 ⚠ Using edge runtime on a page currently disables static generation for that page
@@ -13,7 +13,7 @@
   Generating static pages using 7 workers (3/13) 
   Generating static pages using 7 workers (6/13) 
   Generating static pages using 7 workers (9/13) 
-✓ Generating static pages using 7 workers (13/13) in 1348.6ms
+✓ Generating static pages using 7 workers (13/13) in 861.1ms
   Finalizing page optimization ...
 
 Route (app)

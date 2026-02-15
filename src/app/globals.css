@@ -13,10 +13,12 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 26 89% 67%; /* Sunrise Orange */
+    --primary: 26 90% 62%;
+    /* Softer Warm Accent #F29B4B for CTAs */
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 215 50% 23%; /* Deep Navy */
+    --secondary: 213 78% 24%;
+    /* Deeper Nonprofit Blue #0B3566 */
     --secondary-foreground: 210 40% 98%;
 
     --muted: 210 40% 96.1%;
@@ -30,7 +32,7 @@
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 26 89% 67%;
+    --ring: 26 90% 62%;
 
     --radius: 0.5rem;
   }
@@ -40,11 +42,12 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
 }
 
 .font-bengali {
-    font-family: var(--font-bengali), sans-serif;
+  font-family: var(--font-bengali), sans-serif;
 }

@@ -41,7 +41,10 @@ export function Footer() {
                             <span className="text-xl font-bold text-white">Probhat Foundation</span>
                         </Link>
                         <p className="text-sm leading-6 text-gray-300">
-                            A New Beginning. Empowering rural Bangladesh through education, healthcare, and community development.
+                            Probhat Foundation is a community-focused humanitarian foundation serving underserved areas of Dhaka Division, Bangladesh.
+                        </p>
+                        <p className="text-xs leading-6 text-gray-400 mt-2 font-medium">
+                            Structured. Accountable. Community-Driven.
                         </p>
                         <div className="flex space-x-6">
                             {navigation.social.map((item) => (
