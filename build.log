@@ -1,0 +1,41 @@
+
+> probhat-foundation@0.1.0 build
+> next build
+
+▲ Next.js 16.1.6 (Turbopack)
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 8.2s
+  Running TypeScript ...
+  Collecting page data using 7 workers ...
+⚠ Using edge runtime on a page currently disables static generation for that page
+  Generating static pages using 7 workers (0/13) ...
+  Generating static pages using 7 workers (3/13) 
+  Generating static pages using 7 workers (6/13) 
+  Generating static pages using 7 workers (9/13) 
+✓ Generating static pages using 7 workers (13/13) in 1348.6ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /about
+├ ƒ /api/contact
+├ ƒ /api/donate
+├ ƒ /apple-icon
+├ ○ /contact
+├ ○ /donate
+├ ƒ /icon
+├ ƒ /opengraph-image
+├ ○ /programs
+├ ƒ /programs/[slug]
+├ ○ /reports
+├ ○ /robots.txt
+├ ○ /sitemap.xml
+├ ○ /updates
+└ ƒ /updates/[slug]
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
