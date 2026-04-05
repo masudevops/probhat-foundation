@@ -40,33 +40,23 @@ export default async function AboutPage() {
                         {content}
                     </div>
 
-                    {/* Sidebar / Team Preview */}
+                    {/* Sidebar / Institutional Note */}
                     <div className="space-y-8">
-                        <div className="bg-light-gray p-6 rounded-lg border border-gray-100">
-                            <h3 className="text-xl font-bold text-navy-deep mb-4">Our Leadership</h3>
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-gray-300 rounded-full flex-shrink-0" />
-                                    <div>
-                                        <p className="font-semibold text-navy-deep">Founder Name</p>
-                                        <p className="text-sm text-gray-500">Founder & Chairman</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-gray-300 rounded-full flex-shrink-0" />
-                                    <div>
-                                        <p className="font-semibold text-navy-deep">Coordinator Name</p>
-                                        <p className="text-sm text-gray-500">Chief Coordinator</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-navy-deep text-white p-6 rounded-lg">
-                            <h3 className="text-xl font-bold mb-4">Why We Serve</h3>
-                            <blockquote className="italic text-gray-300">
-                                "Service to others is the rent you pay for your room here on earth."
-                            </blockquote>
+                        <div className="bg-navy-deep text-white p-8 rounded-xl shadow-lg border-l-4 border-sunrise-orange">
+                            <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-white">
+                                <Shield className="h-5 w-5 text-sunrise-orange" />
+                                Institutional Integrity
+                            </h3>
+                            <p className="text-gray-200 text-sm leading-relaxed mb-6">
+                                Probhat Foundation is governed through structured community oversight and transparent coordination mechanisms. We prioritize long-term social impact over individual representation.
+                            </p>
+                            <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-white">
+                                <Eye className="h-5 w-5 text-sunrise-orange" />
+                                Accountability
+                            </h3>
+                            <p className="text-gray-200 text-sm leading-relaxed">
+                                Every program is documented, measured, and reported to ensure that community resources are utilized with maximum efficiency and ethical responsibility.
+                            </p>
                         </div>
                     </div>
                 </div>
