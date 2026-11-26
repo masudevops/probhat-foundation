@@ -36,6 +36,9 @@ Nonprofit foundation building a self-sustaining Islamic community model in Bangl
 - Keep copy in `content/`, not components. Keep Bengali text exactly as provided.
 - Never invent impact numbers, testimonials, donors, partners, prices, or contact details.
 
+## Status
+What's done, how email is wired (Cloudflare Email Routing in, Resend out) and the pending list: `docs/STATUS.md`. Keep it updated when closing out work.
+
 ## Don't touch without asking
 - Root `*.html`, `main.js`, `styles.css`: untracked static prototype the design was ported from (no longer imported).
 - Form API routes, email recipients, `next.config.ts`.
