@@ -1,46 +1,28 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen, Heart, Moon, Users, LucideIcon } from "lucide-react";
-import { Button } from "@/components/ui/common";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-
-const icons: Record<string, LucideIcon> = {
-    GraduationCap: BookOpen,
-    Heart: Heart,
-    Moon: Moon,
-    Users: Users,
-};
+import { ArrowRight } from "lucide-react";
+import { IconTile } from "@/components/ui/brand";
+import { getIcon } from "@/lib/icons";
 
 interface ProgramCardProps {
     title: string;
-    description: string;
+    description?: string;
     slug: string;
     iconName?: string;
 }
 
 export function ProgramCard({ title, description, slug, iconName }: ProgramCardProps) {
-    const Icon = iconName && icons[iconName] ? icons[iconName] : Users;
-
     return (
-        <Card className="flex flex-col h-full hover:shadow-md transition-shadow">
-            <CardHeader>
-                <div className="w-12 h-12 rounded-lg bg-sunrise-orange/10 flex items-center justify-center mb-4 text-sunrise-orange">
-                    <Icon size={24} />
-                </div>
-                <CardTitle className="text-xl text-navy-deep">{title}</CardTitle>
-            </CardHeader>
-            <CardContent className="flex-grow">
-                <CardDescription className="text-base text-gray-600 line-clamp-3">
-                    {description}
-                </CardDescription>
-            </CardContent>
-            <CardFooter>
-                <Link href={`/programs/${slug}`} className="w-full">
-                    <Button variant="outline" className="w-full group">
-                        Learn More
-                        <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                    </Button>
+        <article className="group relative flex h-full flex-col rounded-3xl border border-brand-sand bg-brand-cream p-6 transition hover:border-brand-amber/60 hover:bg-white">
+            <IconTile icon={getIcon(iconName)} className="h-11 w-11" />
+            <h4 className="mt-4 font-display text-lg font-semibold text-brand-forest">
+                <Link href={`/programs/${slug}`} className="after:absolute after:inset-0 focus-visible:outline-none">
+                    {title}
                 </Link>
-            </CardFooter>
-        </Card>
+            </h4>
+            {description && <p className="mt-2 line-clamp-3 text-sm leading-6 text-brand-sage">{description}</p>}
+            <span className="mt-auto inline-flex items-center gap-1.5 pt-4 text-sm font-semibold text-brand-pine group-hover:text-brand-gold">
+                Learn more <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
+            </span>
+        </article>
     );
 }

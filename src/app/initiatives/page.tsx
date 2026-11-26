@@ -1,109 +1,71 @@
+import { CalendarDays, FileText } from "lucide-react";
 import { Container, Section } from "@/components/ui/common";
+import { PageHero, SectionHeading, cardClass } from "@/components/ui/brand";
 import { getPageContent } from "@/lib/mdx";
-import { Calendar, FileText } from "lucide-react";
+import type { InitiativesContent } from "@/lib/content-types";
 
-export const metadata = {
-    title: "Programs & Initiatives",
-    description: "Structured community impact initiatives and program documentation",
-};
+export async function generateMetadata() {
+    const { meta } = await getPageContent<InitiativesContent>("initiatives");
+    return { title: meta.title, description: meta.description };
+}
 
 export default async function InitiativesPage() {
-    const { meta } = await getPageContent("initiatives");
+    const { meta } = await getPageContent<InitiativesContent>("initiatives");
+    const { hero, timeline, documentation } = meta;
 
     return (
-        <div className="flex flex-col min-h-screen">
-            {/* Hero */}
-            <div className="bg-gradient-to-b from-nonprofit-blue to-nonprofit-blue/90 py-20 lg:py-32 relative overflow-hidden">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(248,166,94,0.1),transparent_50%)]" />
-                <Container className="relative z-10">
-                    <div className="max-w-3xl">
-                        <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl mb-6">
-                            {meta.title}
-                        </h1>
-                        <p className="text-xl text-gray-200 mb-8">
-                            {meta.description}
-                        </p>
-                    </div>
-                </Container>
-            </div>
+        <div className="flex flex-col">
+            <PageHero eyebrow={hero.eyebrow} title={hero.title} description={hero.description} />
 
-            {/* Initiatives Timeline */}
-            <Section className="bg-white">
+            <Section>
                 <Container>
-                    <div className="max-w-4xl mx-auto">
-                        <div className="mb-12 text-center">
-                            <h2 className="text-3xl font-bold text-nonprofit-blue mb-4">Initiative Timeline</h2>
-                            <p className="text-lg text-gray-600">
-                                Documented programs and community impact initiatives
-                            </p>
-                        </div>
-
-                        {/* 2026 Initiative Placeholder */}
-                        <div className="relative pl-8 pb-12 border-l-2 border-nonprofit-blue/20">
-                            <div className="absolute left-0 top-0 -translate-x-1/2 w-4 h-4 rounded-full bg-nonprofit-blue border-4 border-white shadow"></div>
-
-                            <div className="bg-gradient-to-br from-nonprofit-blue-light to-white p-8 rounded-xl border border-gray-200 shadow-sm">
-                                <div className="flex items-center gap-3 mb-4">
-                                    <div className="bg-nonprofit-blue text-white rounded-lg px-4 py-2 text-sm font-semibold flex items-center gap-2">
-                                        <Calendar className="h-4 w-4" />
-                                        2026
+                    <div className="mx-auto max-w-3xl">
+                        <SectionHeading title={timeline.title} description={timeline.description} align="center" />
+                        <ol className="relative mt-14 space-y-8 border-l-2 border-brand-amber/30 pl-8">
+                            {timeline.items.map((item) => (
+                                <li key={item.title} className="relative">
+                                    <span aria-hidden="true" className="absolute -left-[2.55rem] top-8 h-4 w-4 rounded-full bg-brand-amber ring-4 ring-brand-cream" />
+                                    <div className={cardClass}>
+                                        <div className="flex flex-wrap items-center gap-3">
+                                            <span className="inline-flex items-center gap-2 rounded-full bg-brand-forest px-3 py-1 text-sm font-semibold text-brand-amber">
+                                                <CalendarDays className="h-4 w-4" aria-hidden="true" />
+                                                {item.year}
+                                            </span>
+                                            <span className="rounded-full bg-brand-amber/15 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-brand-pine">{item.status}</span>
+                                        </div>
+                                        <h3 className="mt-4 font-display text-2xl font-semibold text-brand-forest">{item.title}</h3>
+                                        <p className="mt-3 leading-7 text-brand-sage">{item.description}</p>
+                                        {item.note && (
+                                            <p className="mt-5 flex items-center gap-2 text-sm text-brand-sage">
+                                                <FileText className="h-4 w-4 text-brand-gold" aria-hidden="true" />
+                                                {item.note}
+                                            </p>
+                                        )}
                                     </div>
-                                    <span className="text-sm text-gray-500">Planned</span>
+                                </li>
+                            ))}
+                            <li className="relative">
+                                <span aria-hidden="true" className="absolute -left-[2.55rem] top-8 h-4 w-4 rounded-full border-2 border-brand-amber/50 bg-brand-cream" />
+                                <div className="rounded-3xl border border-dashed border-brand-sand bg-brand-ivory/60 p-7">
+                                    <h3 className="font-display text-xl font-semibold text-brand-forest">{timeline.future.title}</h3>
+                                    <p className="mt-2 text-brand-sage">{timeline.future.description}</p>
                                 </div>
-
-                                <h3 className="text-2xl font-bold text-nonprofit-blue mb-3">First Initiative</h3>
-                                <p className="text-gray-600 mb-6">
-                                    Program details, impact metrics, and documentation will be published as our first structured initiative launches. This initiative will focus on sustainable community development in Dhaka Division.
-                                </p>
-
-                                <div className="flex items-center gap-2 text-sm text-gray-500">
-                                    <FileText className="h-4 w-4" />
-                                    <span>Impact report to be published upon launch</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Future Initiatives Placeholder */}
-                        <div className="relative pl-8">
-                            <div className="absolute left-0 top-0 -translate-x-1/2 w-4 h-4 rounded-full bg-gray-300 border-4 border-white shadow"></div>
-
-                            <div className="bg-gray-50 p-8 rounded-xl border border-gray-200">
-                                <h3 className="text-xl font-semibold text-gray-700 mb-2">Future Initiatives</h3>
-                                <p className="text-gray-600">
-                                    Additional programs and initiatives will be documented here as they are developed and launched.
-                                </p>
-                            </div>
-                        </div>
+                            </li>
+                        </ol>
                     </div>
                 </Container>
             </Section>
 
-            {/* Impact Documentation */}
-            <Section className="bg-light-blue">
+            <Section tone="white">
                 <Container>
-                    <div className="max-w-3xl mx-auto text-center">
-                        <h2 className="text-2xl font-bold text-nonprofit-blue mb-4">Impact Documentation</h2>
-                        <p className="text-lg text-gray-600 mb-8">
-                            Probhat Foundation maintains structured documentation of all programs and initiatives. Impact reports include:
-                        </p>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
-                            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                                <h3 className="font-semibold text-nonprofit-blue mb-2">Program Metrics</h3>
-                                <p className="text-sm text-gray-600">Quantitative outcomes and reach data</p>
+                    <SectionHeading title={documentation.title} description={documentation.description} align="center" />
+                    <div className="mx-auto mt-12 grid max-w-4xl gap-6 sm:grid-cols-2">
+                        {documentation.items.map((item) => (
+                            <div key={item.title} className={cardClass}>
+                                <h3 className="font-display text-lg font-semibold text-brand-forest">{item.title}</h3>
+                                <p className="mt-2 text-brand-sage">{item.description}</p>
                             </div>
-                            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                                <h3 className="font-semibold text-nonprofit-blue mb-2">Financial Allocation</h3>
-                                <p className="text-sm text-gray-600">Transparent fund distribution records</p>
-                            </div>
-                            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                                <h3 className="font-semibold text-nonprofit-blue mb-2">Community Feedback</h3>
-                                <p className="text-sm text-gray-600">Beneficiary testimonials and input</p>
-                            </div>
-                            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                                <h3 className="font-semibold text-nonprofit-blue mb-2">Lessons Learned</h3>
-                                <p className="text-sm text-gray-600">Continuous improvement insights</p>
-                            </div>
-                        </div>
+                        ))}
                     </div>
                 </Container>
             </Section>

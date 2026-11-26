@@ -4,24 +4,22 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-    "inline-flex items-center justify-center whitespace-nowrap rounded-full text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-amber focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60",
     {
         variants: {
             variant: {
-                default: "bg-sunrise-orange text-white hover:bg-sunrise-orange/90",
-                destructive:
-                    "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-                outline:
-                    "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
-                secondary:
-                    "bg-navy-deep text-white hover:bg-navy-deep/90",
-                ghost: "hover:bg-accent hover:text-accent-foreground",
-                link: "text-primary underline-offset-4 hover:underline",
+                default: "bg-brand-amber text-brand-forest shadow-sm hover:bg-brand-gold",
+                secondary: "bg-brand-forest text-brand-ivory hover:bg-brand-pine",
+                outline: "border border-brand-amber/70 bg-transparent text-brand-pine hover:bg-brand-amber/10",
+                outlineLight: "border border-brand-amber/70 bg-white/5 text-brand-ivory hover:bg-white/10",
+                destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+                ghost: "text-brand-pine hover:bg-brand-amber/10",
+                link: "text-brand-pine underline-offset-4 hover:underline",
             },
             size: {
-                default: "h-10 px-4 py-2",
-                sm: "h-9 rounded-md px-3",
-                lg: "h-11 rounded-md px-8",
+                default: "h-11 px-6",
+                sm: "h-9 px-4",
+                lg: "h-14 px-8 text-base",
                 icon: "h-10 w-10",
             },
         },
@@ -61,7 +59,7 @@ export function Container({
 }: React.HTMLAttributes<HTMLDivElement>) {
     return (
         <div
-            className={cn("mx-auto w-full max-w-7xl px-4 md:px-6 lg:px-8", className)}
+            className={cn("mx-auto w-full max-w-7xl px-5 md:px-6 lg:px-8", className)}
             {...props}
         >
             {children}
@@ -69,13 +67,21 @@ export function Container({
     )
 }
 
+const sectionTones = {
+    cream: "bg-brand-cream text-brand-ink",
+    white: "bg-white text-brand-ink",
+    ivory: "bg-brand-ivory text-brand-ink",
+    forest: "bg-brand-forest text-brand-ivory",
+}
+
 export function Section({
     className,
     children,
+    tone = "cream",
     ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
+}: React.HTMLAttributes<HTMLElement> & { tone?: keyof typeof sectionTones }) {
     return (
-        <section className={cn("py-12 md:py-16 lg:py-24", className)} {...props}>
+        <section className={cn("py-16 md:py-20 lg:py-24", sectionTones[tone], className)} {...props}>
             {children}
         </section>
     )

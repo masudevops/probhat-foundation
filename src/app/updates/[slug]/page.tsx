@@ -1,77 +1,102 @@
-import { Container, Section, Button } from "@/components/ui/common";
-import { getPostBySlug } from "@/lib/mdx";
+import fs from "fs";
+import path from "path";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, CalendarDays, Heart, User } from "lucide-react";
+import { Button, Container, Section } from "@/components/ui/common";
+import { DawnMotif } from "@/components/ui/brand";
+import { ShareLinks } from "@/components/ShareLinks";
+import { getAllPosts, getPostBySlug, publicFileExists } from "@/lib/mdx";
+import { siteUrl } from "@/lib/site";
+import { formatDate } from "@/lib/utils";
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
-    try {
-        const { slug } = await params;
-        const { meta } = await getPostBySlug(slug, "updates");
-        return {
-            title: meta.title,
-            description: meta.summary,
-        };
-    } catch (error) {
-        return {
-            title: "Update Not Found",
-        };
-    }
+type Params = { params: Promise<{ slug: string }> };
+
+function updateExists(slug: string) {
+    return /^[a-z0-9-]+$/i.test(slug) && fs.existsSync(path.join(process.cwd(), "content", "updates", `${slug}.mdx`));
 }
 
-export default async function UpdatePage({ params }: { params: Promise<{ slug: string }> }) {
-    try {
-        const { slug } = await params;
-        const { meta, content } = await getPostBySlug(slug, "updates");
+export async function generateStaticParams() {
+    return (await getAllPosts("updates")).map((u) => ({ slug: u.slug }));
+}
 
-        return (
-            <div className="flex flex-col min-h-screen">
-                <div className="bg-navy-deep py-20">
-                    <Container>
-                        <div className="max-w-3xl mx-auto">
-                            <Link href="/updates" className="text-sunrise-orange hover:text-white mb-6 inline-flex items-center font-medium gap-2">
-                                <ArrowLeft size={16} /> Back to Updates
-                            </Link>
-                            <div className="flex items-center gap-4 mb-4">
-                                {meta.date && (
-                                    <span className="text-sm text-gray-400">
-                                        {new Date(meta.date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
-                                    </span>
-                                )}
-                                {meta.tags && (
-                                    <span className="text-xs font-medium text-navy-deep bg-white/10 text-white px-2 py-1 rounded-full">
-                                        {meta.tags[0]}
-                                    </span>
-                                )}
-                            </div>
-                            <h1 className="text-3xl font-bold tracking-tight text-white sm:text-5xl mb-6">{meta.title}</h1>
-                            <p className="text-xl text-gray-300 border-l-4 border-sunrise-orange pl-4">
-                                {meta.summary}
-                            </p>
+export async function generateMetadata({ params }: Params) {
+    const { slug } = await params;
+    if (!updateExists(slug)) return { title: "Update Not Found" };
+    const { meta } = await getPostBySlug(slug, "updates");
+    return { title: meta.title, description: meta.summary, openGraph: { title: meta.title, description: meta.summary, type: "article" } };
+}
+
+export default async function UpdatePage({ params }: Params) {
+    const { slug } = await params;
+    if (!updateExists(slug)) notFound();
+    const { meta, content } = await getPostBySlug(slug, "updates");
+    const cover = publicFileExists(meta.coverImage) ? meta.coverImage : undefined;
+
+    return (
+        <div className="flex flex-col">
+            <section className="relative overflow-hidden bg-brand-forest text-brand-ivory">
+                <DawnMotif className="-bottom-2 right-[-120px] w-[520px] opacity-80 sm:right-0" />
+                <Container className="relative py-16 sm:py-20">
+                    <div className="mx-auto max-w-3xl">
+                        <Link href="/updates" className="inline-flex items-center gap-2 text-sm font-semibold text-brand-amber hover:text-brand-ivory">
+                            <ArrowLeft className="h-4 w-4" aria-hidden="true" /> All updates
+                        </Link>
+                        <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-brand-ivory/75">
+                            {meta.date && (
+                                <span className="inline-flex items-center gap-1.5">
+                                    <CalendarDays className="h-4 w-4 text-brand-amber" aria-hidden="true" />
+                                    <time dateTime={meta.date}>{formatDate(meta.date)}</time>
+                                </span>
+                            )}
+                            {meta.author && (
+                                <span className="inline-flex items-center gap-1.5">
+                                    <User className="h-4 w-4 text-brand-amber" aria-hidden="true" />
+                                    {meta.author}
+                                </span>
+                            )}
+                            {meta.tags?.map((tag) => (
+                                <span key={tag} className="rounded-full border border-white/15 px-2.5 py-0.5 text-xs capitalize">
+                                    {tag.replace(/-/g, " ")}
+                                </span>
+                            ))}
                         </div>
-                    </Container>
-                </div>
+                        <h1 className="mt-5 font-display text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">{meta.title}</h1>
+                        {meta.summary && <p className="mt-5 border-l-4 border-brand-amber pl-4 text-xl leading-8 text-brand-ivory/85">{meta.summary}</p>}
+                    </div>
+                </Container>
+            </section>
 
-                <Section>
-                    <Container>
-                        <div className="max-w-3xl mx-auto">
-                            <article className="prose prose-lg prose-headings:text-navy-deep prose-p:text-gray-600 prose-a:text-sunrise-orange max-w-none">
-                                {content}
-                            </article>
-                            <div className="mt-12 pt-8 border-t border-gray-200">
-                                <h3 className="text-xl font-bold text-navy-deep mb-4">Share this update</h3>
-                                <div className="flex gap-4">
-                                    {/* Placeholder for share buttons */}
-                                    <Button variant="outline" size="sm">Share on Facebook</Button>
-                                    <Button variant="outline" size="sm">Share on Twitter</Button>
+            <Section className="pt-12 md:pt-16">
+                <Container>
+                    <div className="mx-auto max-w-3xl">
+                        {cover && (
+                            <div className="relative mb-10 aspect-[16/9] overflow-hidden rounded-3xl">
+                                <Image src={cover} alt="" fill sizes="(min-width: 768px) 768px, 100vw" className="object-cover" priority />
+                            </div>
+                        )}
+                        <article className="prose prose-lg max-w-none">{content}</article>
+
+                        <div className="mt-14 grid gap-8 border-t border-brand-sand pt-8 sm:grid-cols-2 sm:items-center">
+                            <div>
+                                <h2 className="font-display text-lg font-semibold text-brand-forest">Share this update</h2>
+                                <div className="mt-4">
+                                    <ShareLinks url={`${siteUrl}/updates/${slug}`} title={meta.title} />
                                 </div>
                             </div>
+                            <div className="rounded-3xl bg-brand-forest p-6 text-brand-ivory">
+                                <p className="font-display text-lg font-semibold">Help us do more of this work.</p>
+                                <Button asChild className="mt-4">
+                                    <Link href="/donate">
+                                        <Heart className="h-4 w-4" aria-hidden="true" /> Support our work
+                                    </Link>
+                                </Button>
+                            </div>
                         </div>
-                    </Container>
-                </Section>
-            </div>
-        );
-    } catch (error) {
-        notFound();
-    }
+                    </div>
+                </Container>
+            </Section>
+        </div>
+    );
 }

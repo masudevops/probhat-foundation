@@ -1,4 +1,20 @@
 import type { Config } from "tailwindcss";
+import typography from "@tailwindcss/typography";
+
+// Brand palette ("Dawn over the forest"): deep greens, warm cream and gold.
+// Use these tokens (e.g. `bg-brand-forest`, `text-brand-amber`) instead of hex values.
+const brand = {
+    forest: "#0E2318", // darkest green: heroes, header, footer
+    pine: "#14532D", // primary green: headings on light, icon tiles
+    line: "#1E3D28", // dark green for borders/dividers on dark sections
+    ink: "#10220D", // body text on light backgrounds
+    sage: "#4A5E50", // secondary text on light backgrounds
+    ivory: "#F5F0E8", // text on dark backgrounds, soft panels
+    cream: "#FEFAF2", // page background
+    sand: "#EDE4D3", // borders on light backgrounds
+    gold: "#C9922A", // hover/darker accent
+    amber: "#E8A830", // primary accent and CTAs
+};
 
 const config: Config = {
     content: [
@@ -16,6 +32,7 @@ const config: Config = {
         },
         extend: {
             colors: {
+                brand,
                 border: "hsl(var(--border))",
                 input: "hsl(var(--input))",
                 ring: "hsl(var(--ring))",
@@ -40,7 +57,6 @@ const config: Config = {
                 accent: {
                     DEFAULT: "hsl(var(--accent))",
                     foreground: "hsl(var(--accent-foreground))",
-                    gold: "#E9C46A",
                 },
                 popover: {
                     DEFAULT: "hsl(var(--popover))",
@@ -50,28 +66,6 @@ const config: Config = {
                     DEFAULT: "hsl(var(--card))",
                     foreground: "hsl(var(--card-foreground))",
                 },
-                // Custom Brand Colors - Premium Nonprofit Theme
-                nonprofit: {
-                    blue: "#0B3566", // Deeper navy for headings
-                    "blue-light": "#F3F8FC", // Blue-tinted background
-                },
-                warm: {
-                    accent: "#F29B4B", // Softer orange
-                },
-                // Legacy colors (kept for compatibility)
-                sunrise: {
-                    orange: "#F29B4B", // Updated to match warm accent
-                },
-                navy: {
-                    deep: "#0B3566", // Updated to match nonprofit blue
-                },
-                light: {
-                    gray: "#F8F9FA",
-                    blue: "#F3F8FC", // Blue-tinted background
-                },
-                text: {
-                    dark: "#2B2D42",
-                },
             },
             borderRadius: {
                 lg: "var(--radius)",
@@ -79,43 +73,35 @@ const config: Config = {
                 sm: "calc(var(--radius) - 4px)",
             },
             fontFamily: {
-                sans: ["var(--font-inter)", "sans-serif"],
+                sans: ["var(--font-inter)", "system-ui", "sans-serif"],
+                display: ["var(--font-playfair)", "Georgia", "serif"],
                 bengali: ["var(--font-bengali)", "sans-serif"],
-            },
-            backgroundImage: {
-                "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
-                "gradient-conic":
-                    "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
             },
             typography: {
                 DEFAULT: {
                     css: {
-                        color: '#2B2D42',
+                        color: brand.sage,
                         a: {
-                            color: '#F29B4B',
-                            '&:hover': {
-                                color: '#0B3566',
-                            },
+                            color: brand.pine,
+                            textDecorationColor: brand.amber,
+                            "&:hover": { color: brand.gold },
                         },
-                        h1: {
-                            color: '#0B3566',
+                        "h1, h2, h3, h4": {
+                            color: brand.forest,
+                            fontFamily: "var(--font-playfair), Georgia, serif",
+                            fontWeight: "600",
                         },
-                        h2: {
-                            color: '#0B3566',
-                        },
-                        h3: {
-                            color: '#0B3566',
-                        },
-                        strong: {
-                            color: '#0B3566',
+                        strong: { color: brand.forest },
+                        "ul > li::marker": { color: brand.amber },
+                        blockquote: {
+                            borderLeftColor: brand.amber,
+                            color: brand.forest,
                         },
                     },
                 },
             },
         },
     },
-    plugins: [
-        require('@tailwindcss/typography'),
-    ],
+    plugins: [typography],
 };
 export default config;

@@ -1,13 +1,25 @@
 ---
 title: "Support Our Work"
 description: "Your contribution supports structured, accountable community programs in Bangladesh."
-transparencyPromise:
-  title: "Our Transparency Commitment"
-  items:
-    - "Clear allocation of funds to designated programs"
-    - "Documented internal financial tracking"
-    - "Impact updates published as initiatives begin"
-    - "Financial summaries available upon request"
+
+# ── Giving status ────────────────────────────────────────────────
+# While givingOpen is false, the page shows the "coming soon" notice and the
+# form collects pledges. When accounts are ready: set givingOpen to true and
+# fill in `detail` (and optional `url`) for each payment method below.
+givingOpen: false
+comingSoon:
+  title: "Online giving opens soon"
+  text: "We are setting up our donation accounts so every gift is received, receipted and recorded properly. Pledge your support below and we will email you as soon as giving opens. Founding donors will be the first to know."
+
+paymentMethods:
+  - name: "PayPal"
+    detail: ""        # e.g. "paypal.me/probhatfoundation"
+    url: ""           # e.g. "https://paypal.me/probhatfoundation"
+  - name: "Zelle"
+    detail: ""        # e.g. the Zelle email or phone
+  - name: "Bangladesh (bKash / Nagad)"
+    detail: ""        # e.g. the merchant number, for local supporters
+
 funds:
   general:
     title: "General Fund"
@@ -15,7 +27,8 @@ funds:
   zakat:
     title: "Zakat Fund"
     description: "Reserved for eligible program categories such as relief support, education assistance, and livelihood empowerment."
-transparencyNote: "Where applicable, Zakat-designated funds are allocated in accordance with Islamic charitable principles and reserved for eligible program categories. All funds are documented and tracked via structured oversight mechanisms."
+
+# Amounts are in US dollars
 donationTiers:
   - amount: 25
     description: "Helps provide essential school supplies for students"
@@ -27,39 +40,23 @@ donationTiers:
     description: "Helps sponsor a student's education support for a period of time"
   - amount: 500
     description: "Helps support community learning resources and materials"
-paymentMethods:
-  - name: "PayPal"
-    detail: "paypal.me/probhatfoundation"
-  - name: "Zelle"
-    detail: "Donation details available upon request"
-  - name: "Bangladesh (bKash / Nagad)"
-    detail: "Available upon request (for local supporters)"
-operationalNotice:
-  title: "Important Notice"
-  text: "Donations are currently processed through designated operational accounts as the foundation finalizes its formal banking structure. All funds are documented and allocated according to designated categories. Please mention “Zakat” or “General” in your reference or message."
----
 
-# Make a Difference Today
+designations:
+  - value: "general"
+    label: "Where Most Needed"
+  - value: "education"
+    label: "Education"
+  - value: "healthcare"
+    label: "Healthcare & Child Wellbeing"
+  - value: "community"
+    label: "Community Development & Economic Empowerment"
 
-Every donation, no matter the size, helps us bring meaningful support to communities in need.
-
-## Choose a Fund
-
-Select the type of donation you want to support:
-
-- **General Fund** — Education, healthcare, and community development  
-- **Zakat Fund** — Distributed to eligible beneficiaries according to Islamic charitable principles  
-
-## How Your Support Helps
-
-Your contribution helps us plan and execute initiatives with clarity, documentation, and accountability. As we grow, we will publish structured impact updates and reports.
-
-## Payment Methods
-
-Use one of the methods below to contribute. If you need the latest details for Zelle or Bangladesh local methods, please reach out through the Contact page.
-
-## Transparency
-
-We take accountability seriously. Funds are tracked internally by category (General vs Zakat), and documentation is maintained for program execution and reporting.
-
+transparencyPromise:
+  title: "Our Transparency Commitment"
+  items:
+    - "Clear allocation of funds to designated programs"
+    - "Documented internal financial tracking"
+    - "Impact updates published as initiatives begin"
+    - "Financial summaries available upon request"
+transparencyNote: "Where applicable, Zakat-designated funds are allocated in accordance with Islamic charitable principles and reserved for eligible program categories. All funds are documented and tracked via structured oversight mechanisms."
 ---
