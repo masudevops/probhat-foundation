@@ -51,7 +51,7 @@ These are only set for **Production**, so forms on Vercel preview deployments sh
 - [ ] Founding team bios (About page says they'll be published at launch).
 
 ### Housekeeping
-- [ ] Review `.env.example` before committing it: `.gitignore` now allows it (`!.env.example`), but it still contains old, unused variables (`SMTP_*`, `ADMIN_EMAIL`, `NEXT_PUBLIC_GA_ID`, `NEXT_PUBLIC_SITE_NAME`). Remove them or make sure they hold placeholders only, then commit. This repo is public.
+- [x] `.env.example` reviewed (placeholders only), old unused variables removed, and committed. It lists only the variables the code uses.
 - [x] Deleted the untracked static HTML prototype from the repo root (2026-11-26).
 - [ ] Refresh `README.md`: its content guide still describes the old site structure. Point it at this file and `CLAUDE.md`.
 - [ ] Add basic tests (form API validation, content loading).
