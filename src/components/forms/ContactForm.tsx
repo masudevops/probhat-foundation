@@ -3,129 +3,81 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { Send } from "lucide-react";
 import { Button } from "@/components/ui/common";
-import { Input } from "@/components/ui/input";
+import { Input, fieldClass } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Field, FormError, FormSuccess, Honeypot, submitForm, type SubmitError } from "@/components/forms/Field";
+import { contactSchema, type ContactInput } from "@/lib/schemas";
+import { cn } from "@/lib/utils";
 
-const contactSchema = z.object({
-    name: z.string().min(2, "Name must be at least 2 characters"),
-    email: z.string().email("Please enter a valid email address"),
-    subject: z.string().optional(),
-    message: z.string().min(10, "Message must be at least 10 characters"),
-});
-
-type ContactFormValues = z.infer<typeof contactSchema>;
-
-export function ContactForm() {
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [isSuccess, setIsSuccess] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+export function ContactForm({ subjects, defaultSubject }: { subjects: string[]; defaultSubject?: string }) {
+    const [error, setError] = useState<SubmitError>(null);
+    const [sent, setSent] = useState(false);
 
     const {
         register,
         handleSubmit,
         reset,
-        formState: { errors },
-    } = useForm<ContactFormValues>({
+        formState: { errors, isSubmitting },
+    } = useForm<ContactInput>({
         resolver: zodResolver(contactSchema),
+        defaultValues: { subject: defaultSubject ?? subjects[0] },
     });
 
-    const onSubmit = async (data: ContactFormValues) => {
-        setIsSubmitting(true);
+    const onSubmit = async (data: ContactInput) => {
         setError(null);
-
-        try {
-            const response = await fetch("/api/contact", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(data),
-            });
-
-            if (!response.ok) {
-                throw new Error("Failed to send message");
-            }
-
-            setIsSuccess(true);
-            reset();
-        } catch (err) {
-            setError("Something went wrong. Please try again later.");
-        } finally {
-            setIsSubmitting(false);
+        const result = await submitForm("/api/contact", data);
+        if (result) {
+            setError(result);
+            return;
         }
+        setSent(true);
+        reset({ subject: subjects[0] });
     };
 
-    if (isSuccess) {
+    if (sent) {
         return (
-            <div className="rounded-lg bg-green-50 p-6 text-center">
-                <h3 className="text-lg font-medium text-green-800">Message Sent!</h3>
-                <p className="mt-2 text-sm text-green-700">
-                    Thank you for contacting us. We will get back to you within 48 hours.
-                </p>
-                <Button
-                    variant="outline"
-                    className="mt-4"
-                    onClick={() => setIsSuccess(false)}
-                >
-                    Send Another Message
-                </Button>
-            </div>
+            <FormSuccess
+                title="Message sent"
+                action={
+                    <Button variant="outline" onClick={() => setSent(false)}>
+                        Send another message
+                    </Button>
+                }
+            >
+                <p>JazakAllahu khairan for reaching out. Our team will reply by email as soon as possible.</p>
+            </FormSuccess>
         );
     }
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                <div className="space-y-2">
-                    <label htmlFor="name" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                        Name <span className="text-red-500">*</span>
-                    </label>
-                    <Input id="name" placeholder="Your name" {...register("name")} />
-                    {errors.name && (
-                        <p className="text-xs text-red-500">{errors.name.message}</p>
-                    )}
-                </div>
-                <div className="space-y-2">
-                    <label htmlFor="email" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                        Email <span className="text-red-500">*</span>
-                    </label>
-                    <Input id="email" type="email" placeholder="john@example.com" {...register("email")} />
-                    {errors.email && (
-                        <p className="text-xs text-red-500">{errors.email.message}</p>
-                    )}
-                </div>
+        <form onSubmit={handleSubmit(onSubmit)} noValidate className="relative space-y-5">
+            <div className="grid gap-5 sm:grid-cols-2">
+                <Field id="name" label="Name" required error={errors.name?.message}>
+                    <Input id="name" autoComplete="name" aria-invalid={!!errors.name} aria-describedby={errors.name ? "name-error" : undefined} {...register("name")} />
+                </Field>
+                <Field id="email" label="Email" required error={errors.email?.message}>
+                    <Input id="email" type="email" autoComplete="email" aria-invalid={!!errors.email} aria-describedby={errors.email ? "email-error" : undefined} {...register("email")} />
+                </Field>
             </div>
-            <div className="space-y-2">
-                <label htmlFor="subject" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                    Subject
-                </label>
-                <Input id="subject" placeholder="How can we help?" {...register("subject")} />
-            </div>
-            <div className="space-y-2">
-                <label htmlFor="message" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                    Message <span className="text-red-500">*</span>
-                </label>
-                <Textarea
-                    id="message"
-                    placeholder="Type your message here..."
-                    className="min-h-[120px]"
-                    {...register("message")}
-                />
-                {errors.message && (
-                    <p className="text-xs text-red-500">{errors.message.message}</p>
-                )}
-            </div>
+            <Field id="subject" label="Subject" required>
+                <select id="subject" className={cn(fieldClass, "h-12 py-0")} {...register("subject")}>
+                    {subjects.map((subject) => (
+                        <option key={subject}>{subject}</option>
+                    ))}
+                </select>
+            </Field>
+            <Field id="message" label="Message" required error={errors.message?.message}>
+                <Textarea id="message" rows={6} aria-invalid={!!errors.message} aria-describedby={errors.message ? "message-error" : undefined} {...register("message")} />
+            </Field>
 
-            {error && (
-                <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
-                    {error}
-                </div>
-            )}
+            <FormError error={error} />
 
-            <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
-                {isSubmitting ? "Sending..." : "Send Message"}
+            <Honeypot {...register("company")} />
+            <Button type="submit" size="lg" disabled={isSubmitting} className="w-full sm:w-auto">
+                {isSubmitting ? "Sending…" : "Send Message"}
+                {!isSubmitting && <Send className="h-4 w-4" aria-hidden="true" />}
             </Button>
         </form>
     );

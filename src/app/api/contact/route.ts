@@ -1,27 +1,21 @@
-import { NextResponse } from 'next/server';
-import { z } from 'zod';
-
-const contactSchema = z.object({
-    name: z.string().min(2),
-    email: z.string().email(),
-    subject: z.string().optional(),
-    message: z.string().min(10)
-});
+import { NextResponse } from "next/server";
+import { contactSchema } from "@/lib/schemas";
+import { formatFields, sendEmail } from "@/lib/email";
+import { parseBody, sendResultResponse } from "@/lib/api";
 
 export async function POST(request: Request) {
-    try {
-        const body = await request.json();
-        const data = contactSchema.parse(body);
+    const parsed = await parseBody(request, contactSchema);
+    if ("response" in parsed) return parsed.response;
+    const data = parsed.data;
 
-        // Simulate email sending
-        console.log('Sending email to admin:', data);
-        await new Promise(resolve => setTimeout(resolve, 500));
+    // Honeypot filled in: pretend success so bots don't retry.
+    if (data.company) return NextResponse.json({ success: true });
 
-        return NextResponse.json({ success: true });
-    } catch (error) {
-        return NextResponse.json(
-            { error: 'Failed to send message' },
-            { status: 500 }
-        );
-    }
+    const result = await sendEmail({
+        subject: `[Website] ${data.subject || "General Enquiry"} from ${data.name}`,
+        replyTo: data.email,
+        text: `${formatFields({ Name: data.name, Email: data.email, Subject: data.subject })}\n\n${data.message}\n\n— Sent from the contact form on the Probhat Foundation website`,
+    });
+
+    return sendResultResponse(result);
 }

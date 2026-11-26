@@ -1,192 +1,333 @@
 "use client";
 
 import { useState } from "react";
-import { Container, Section, Button } from "@/components/ui/common";
-import { DonationTier } from "@/components/cards/DonationTier";
-import { ArrowRight, Lock, CheckCircle2, Copy } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { useForm, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ArrowRight, CheckCircle2, Clock, Copy, ExternalLink, Lock, Sparkles } from "lucide-react";
+import { Button, Container } from "@/components/ui/common";
+import { cardClass } from "@/components/ui/brand";
+import { Input, fieldClass } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Field, FormError, FormSuccess, Honeypot, submitForm, type SubmitError } from "@/components/forms/Field";
+import { pledgeSchema, type PledgeInput } from "@/lib/schemas";
+import type { DonateContent as DonateMeta } from "@/lib/content-types";
 import { cn } from "@/lib/utils";
 
-interface DonateContentProps {
-    meta: any;
-    programs: any[];
+const usd = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+
+/** Segmented radio control (fund type, frequency). */
+function Segmented<T extends string>({ name, legend, options, value, register }: {
+    name: "fund" | "frequency";
+    legend: string;
+    options: { value: T; label: string }[];
+    value: T;
+    register: ReturnType<typeof useForm<PledgeInput>>["register"];
+}) {
+    return (
+        <fieldset>
+            <legend className="text-sm font-semibold text-brand-forest">{legend}</legend>
+            <div className="mt-2 grid grid-cols-2 gap-1 rounded-full bg-brand-ivory p-1">
+                {options.map((option) => (
+                    <label
+                        key={option.value}
+                        className={cn(
+                            "cursor-pointer rounded-full px-4 py-2.5 text-center text-sm font-semibold transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-amber",
+                            value === option.value ? "bg-brand-forest text-brand-ivory shadow" : "text-brand-sage hover:text-brand-forest"
+                        )}
+                    >
+                        <input type="radio" value={option.value} className="sr-only" {...register(name)} />
+                        {option.label}
+                    </label>
+                ))}
+            </div>
+        </fieldset>
+    );
 }
 
-export function DonateContent({ meta, programs }: DonateContentProps) {
-    const [fundType, setFundType] = useState<"general" | "zakat">("general");
+function PaymentMethod({ name, detail, url }: { name: string; detail?: string; url?: string }) {
+    const [copied, setCopied] = useState(false);
+    const copy = async () => {
+        if (!detail) return;
+        await navigator.clipboard.writeText(detail);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
 
     return (
-        <div className="flex flex-col min-h-screen">
-            {/* Hero */}
-            <div className="bg-navy-deep py-20 lg:py-32 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-navy-deep to-sunrise-orange/10" />
-                <Container className="relative z-10">
-                    <div className="max-w-3xl">
-                        <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl mb-6">
-                            {meta.title}
-                        </h1>
-                        <p className="text-xl text-gray-300 mb-8">
-                            {meta.description}
-                        </p>
-                    </div>
-                </Container>
+        <li className="rounded-2xl border border-brand-sand bg-white p-4">
+            <div className="flex items-center justify-between gap-3">
+                <p className="font-semibold text-brand-forest">{name}</p>
+                {!detail && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-brand-amber/15 px-2.5 py-1 text-xs font-semibold text-brand-pine">
+                        <Clock className="h-3 w-3" aria-hidden="true" /> Coming soon
+                    </span>
+                )}
             </div>
+            {detail && (
+                <div className="mt-2 flex items-center justify-between gap-2">
+                    {url ? (
+                        <a href={url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 break-all font-mono text-sm text-brand-pine underline decoration-brand-amber underline-offset-4">
+                            {detail} <ExternalLink className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                        </a>
+                    ) : (
+                        <p className="break-all font-mono text-sm text-brand-sage">{detail}</p>
+                    )}
+                    <Button variant="ghost" size="icon" onClick={copy} className="h-9 w-9 shrink-0">
+                        {copied ? <CheckCircle2 className="h-4 w-4 text-brand-pine" /> : <Copy className="h-4 w-4" />}
+                        <span className="sr-only">{copied ? "Copied" : `Copy ${name} details`}</span>
+                    </Button>
+                </div>
+            )}
+        </li>
+    );
+}
 
-            <Container className="py-12 lg:py-16 -mt-20 relative z-20">
-                <div className="bg-white rounded-xl shadow-xl border border-gray-100 p-6 md:p-10">
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                        {/* Donation Form Column */}
-                        <div className="lg:col-span-2 space-y-8">
+interface DonateContentProps {
+    meta: DonateMeta;
+    defaultFund: "general" | "zakat";
+    defaultDesignation?: string;
+}
 
-                            {/* Fund Selector */}
-                            <div>
-                                <h2 className="text-2xl font-bold text-navy-deep mb-4">Select Fund Type</h2>
-                                <div className="flex p-1 bg-gray-100 rounded-lg mb-6">
-                                    <button
-                                        onClick={() => setFundType("general")}
-                                        className={cn(
-                                            "flex-1 py-3 px-4 rounded-md text-sm font-medium transition-all duration-200",
-                                            fundType === "general"
-                                                ? "bg-white text-navy-deep shadow-sm ring-1 ring-black/5"
-                                                : "text-gray-500 hover:text-gray-900"
-                                        )}
-                                    >
-                                        {meta.funds?.general?.title || "General Fund"}
-                                    </button>
-                                    <button
-                                        onClick={() => setFundType("zakat")}
-                                        className={cn(
-                                            "flex-1 py-3 px-4 rounded-md text-sm font-medium transition-all duration-200",
-                                            fundType === "zakat"
-                                                ? "bg-white text-navy-deep shadow-sm ring-1 ring-black/5"
-                                                : "text-gray-500 hover:text-gray-900"
-                                        )}
-                                    >
-                                        {meta.funds?.zakat?.title || "Zakat Fund"}
-                                    </button>
-                                </div>
+export function DonateContent({ meta, defaultFund, defaultDesignation }: DonateContentProps) {
+    const tiers = meta.donationTiers;
+    const [choice, setChoice] = useState<number | "custom">(tiers[2]?.amount ?? tiers[0]?.amount ?? "custom");
+    const [error, setError] = useState<SubmitError>(null);
+    const [pledged, setPledged] = useState<PledgeInput | null>(null);
 
-                                <div className={cn(
-                                    "p-4 rounded-lg border mb-8 transition-colors",
-                                    fundType === "general" ? "bg-sunrise-orange/5 border-sunrise-orange/20" : "bg-emerald-50 border-emerald-100"
-                                )}>
-                                    <p className="text-navy-deep">
-                                        {fundType === "general"
-                                            ? meta.funds?.general?.description
-                                            : meta.funds?.zakat?.description}
-                                    </p>
-                                </div>
+    const {
+        register,
+        handleSubmit,
+        setValue,
+        control,
+        formState: { errors, isSubmitting },
+    } = useForm<PledgeInput>({
+        resolver: zodResolver(pledgeSchema),
+        defaultValues: {
+            fund: defaultFund,
+            frequency: "one-time",
+            amount: typeof choice === "number" ? choice : undefined,
+            designation: meta.designations.find((d) => d.value === defaultDesignation)?.label ?? meta.designations[0]?.label,
+        },
+    });
 
-                                <h2 className="text-2xl font-bold text-navy-deep mb-4">Choose Your Impact</h2>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {meta.donationTiers?.map((tier: any) => (
-                                        <DonationTier
-                                            key={tier.amount}
-                                            amount={tier.amount}
-                                            description={tier.description}
-                                        />
-                                    ))}
-                                    <div className="flex items-center justify-center p-6 border-2 border-dashed border-gray-200 rounded-lg hover:border-sunrise-orange transition-colors cursor-pointer">
-                                        <span className="text-lg font-medium text-gray-600">Custom Amount</span>
-                                    </div>
-                                </div>
-                            </div>
+    const [fund, frequency, amount] = useWatch({ control, name: ["fund", "frequency", "amount"] });
+    const givingOpen = meta.givingOpen;
+    const activeMethods = meta.paymentMethods.filter((m) => m.detail);
 
-                            <div className="border-t border-gray-100 pt-8">
-                                <h2 className="text-2xl font-bold text-navy-deep mb-6">Donation Intent</h2>
-                                <form className="space-y-4">
-                                    <input type="hidden" name="fundType" value={fundType} />
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <label htmlFor="name" className="text-sm font-medium">Name</label>
-                                            <Input id="name" placeholder="Full Name" />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label htmlFor="email" className="text-sm font-medium">Email</label>
-                                            <Input id="email" type="email" placeholder="email@example.com" />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label htmlFor="program" className="text-sm font-medium">Program Preference (Optional)</label>
-                                        <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
-                                            <option value="">General Fund (Where Most Needed)</option>
-                                            {programs.map((p: any) => (
-                                                <option key={p.slug} value={p.slug}>{p.title}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label htmlFor="message" className="text-sm font-medium">Message (Optional)</label>
-                                        <Textarea id="message" placeholder="Leave a message..." />
-                                    </div>
+    const chooseTier = (value: number | "custom") => {
+        setChoice(value);
+        setValue("amount", value === "custom" ? (undefined as unknown as number) : value, { shouldValidate: value !== "custom" });
+    };
 
-                                    <div className="bg-gray-50 p-4 rounded text-sm text-gray-600 italic border border-gray-100">
-                                        {meta.transparencyNote}
-                                    </div>
+    const onSubmit = async (data: PledgeInput) => {
+        setError(null);
+        const result = await submitForm("/api/donate", data);
+        if (result) {
+            setError(result);
+            return;
+        }
+        setPledged(data);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    };
 
-                                    <Button size="lg" className="w-full sm:w-auto">
-                                        Confirm Donation Intent <ArrowRight className="ml-2 h-4 w-4" />
-                                    </Button>
-                                    <p className="text-xs text-gray-500 mt-2">
-                                        * This form notifies us of your intent. Payment details are provided below.
-                                    </p>
-                                </form>
-                            </div>
-                        </div>
+    const summary = amount && amount > 0 ? `${usd.format(amount)}${frequency === "monthly" ? " / month" : ""}` : null;
 
-                        {/* Info Column */}
-                        <div className="space-y-8">
-                            {/* Transparency Promise */}
-                            <div className="bg-light-gray p-6 rounded-lg">
-                                <div className="flex items-center gap-2 mb-4 text-navy-deep">
-                                    <Lock className="h-5 w-5" />
-                                    <h3 className="font-bold text-lg">{meta.transparencyPromise?.title}</h3>
-                                </div>
-                                <ul className="space-y-3">
-                                    {meta.transparencyPromise?.items.map((item: string, idx: number) => (
-                                        <li key={idx} className="flex items-start gap-2 text-sm text-gray-600">
-                                            <CheckCircle2 className="h-4 w-4 text-sunrise-orange mt-0.5 flex-shrink-0" />
-                                            <span>{item}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-
-                            {/* Operational Notice */}
-                            {meta.operationalNotice && (
-                                <div className="bg-amber-50 border border-amber-200 p-6 rounded-lg">
-                                    <h3 className="font-bold text-lg text-amber-900 mb-2">{meta.operationalNotice.title}</h3>
-                                    <p className="text-sm text-amber-800 leading-relaxed">
-                                        {meta.operationalNotice.text}
-                                    </p>
-                                </div>
-                            )}
-
-                            {/* Payment Methods */}
-                            <div>
-                                <h3 className="font-bold text-lg text-navy-deep mb-4">Payment Methods</h3>
-                                <div className="space-y-4">
-                                    {meta.paymentMethods?.map((method: any, idx: number) => (
-                                        <div key={idx} className="p-4 border border-gray-200 rounded-lg">
-                                            <p className="font-medium text-navy-deep">{method.name}</p>
-                                            <div className="flex items-center justify-between mt-1 gap-2">
-                                                <p className="text-sm font-mono text-gray-600 bg-gray-50 px-2 py-1 rounded break-all">
-                                                    {method.detail}
-                                                </p>
-                                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => navigator.clipboard.writeText(method.detail)}>
-                                                    <Copy className="h-4 w-4 text-gray-400" />
-                                                    <span className="sr-only">Copy {method.name} details</span>
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
+    return (
+        <Container className="relative z-10 -mt-16 pb-20 sm:-mt-20 lg:pb-28">
+            {!givingOpen && (
+                <div className="mb-6 flex flex-col gap-4 rounded-3xl border border-brand-amber/50 bg-brand-ivory p-6 shadow-lg sm:flex-row sm:items-start sm:p-8">
+                    <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-brand-amber text-brand-forest">
+                        <Sparkles className="h-6 w-6" aria-hidden="true" />
+                    </span>
+                    <div>
+                        <h2 className="font-display text-2xl font-semibold text-brand-forest">{meta.comingSoon.title}</h2>
+                        <p className="mt-2 max-w-3xl leading-7 text-brand-sage">{meta.comingSoon.text}</p>
                     </div>
                 </div>
-            </Container>
-        </div>
+            )}
+
+            <div className="grid gap-6 lg:grid-cols-[1.6fr_1fr] lg:items-start">
+                {/* Pledge / intent form */}
+                <div className={cn(cardClass, "p-6 sm:p-10")}>
+                    {pledged ? (
+                        <FormSuccess
+                            title={givingOpen ? "Thank you for your support" : "Your pledge is recorded"}
+                            action={
+                                <Button variant="outline" onClick={() => setPledged(null)}>
+                                    Make another pledge
+                                </Button>
+                            }
+                        >
+                            <p>
+                                JazakAllahu khairan, {pledged.name.split(" ")[0]}. We&apos;ve noted your {usd.format(pledged.amount)}
+                                {pledged.frequency === "monthly" ? " monthly" : ""} {pledged.fund === "zakat" ? "Zakat" : "General Fund"} pledge.{" "}
+                                {givingOpen
+                                    ? "We'll email you the payment details shortly."
+                                    : "We'll email you as soon as giving opens."}
+                            </p>
+                        </FormSuccess>
+                    ) : (
+                        <form onSubmit={handleSubmit(onSubmit)} noValidate className="relative space-y-8">
+                            <div>
+                                <h2 className="font-display text-2xl font-semibold text-brand-forest">
+                                    {givingOpen ? "Make a donation" : "Pledge your support"}
+                                </h2>
+                                <p className="mt-2 text-brand-sage">
+                                    {givingOpen
+                                        ? "Tell us about your gift and we'll confirm the payment details by email."
+                                        : "No payment is taken today. We'll contact you with payment details when giving opens."}
+                                </p>
+                            </div>
+
+                            <div className="grid gap-6 sm:grid-cols-2">
+                                <Segmented
+                                    name="fund"
+                                    legend="Fund"
+                                    value={fund}
+                                    register={register}
+                                    options={[
+                                        { value: "general", label: meta.funds.general.title },
+                                        { value: "zakat", label: meta.funds.zakat.title },
+                                    ]}
+                                />
+                                <Segmented
+                                    name="frequency"
+                                    legend="Frequency"
+                                    value={frequency}
+                                    register={register}
+                                    options={[
+                                        { value: "one-time", label: "One-time" },
+                                        { value: "monthly", label: "Monthly" },
+                                    ]}
+                                />
+                            </div>
+                            <p className="-mt-4 rounded-2xl bg-brand-cream px-4 py-3 text-sm leading-6 text-brand-sage">
+                                {fund === "zakat" ? meta.funds.zakat.description : meta.funds.general.description}
+                            </p>
+
+                            <fieldset>
+                                <legend className="text-sm font-semibold text-brand-forest">Amount (USD)</legend>
+                                <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                                    {tiers.map((tier) => (
+                                        <label
+                                            key={tier.amount}
+                                            className={cn(
+                                                "relative cursor-pointer rounded-2xl border p-4 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-amber",
+                                                choice === tier.amount ? "border-brand-amber bg-brand-amber/10 ring-1 ring-brand-amber" : "border-brand-sand hover:border-brand-amber/60"
+                                            )}
+                                        >
+                                            <input type="radio" name="tier" className="sr-only" checked={choice === tier.amount} onChange={() => chooseTier(tier.amount)} />
+                                            <span className="flex items-center justify-between font-display text-2xl font-semibold text-brand-forest">
+                                                {usd.format(tier.amount)}
+                                                {choice === tier.amount && <CheckCircle2 className="h-5 w-5 text-brand-gold" aria-hidden="true" />}
+                                            </span>
+                                            <span className="mt-1 block text-sm leading-5 text-brand-sage">{tier.description}</span>
+                                        </label>
+                                    ))}
+                                    <label
+                                        className={cn(
+                                            "flex cursor-pointer flex-col justify-center rounded-2xl border border-dashed p-4 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-amber",
+                                            choice === "custom" ? "border-brand-amber bg-brand-amber/10" : "border-brand-sand hover:border-brand-amber/60"
+                                        )}
+                                    >
+                                        <input type="radio" name="tier" className="sr-only" checked={choice === "custom"} onChange={() => chooseTier("custom")} />
+                                        <span className="font-semibold text-brand-forest">Other amount</span>
+                                        {choice === "custom" ? (
+                                            <span className="mt-2 flex items-center gap-1">
+                                                <span className="text-lg font-semibold text-brand-forest">$</span>
+                                                <Input
+                                                    type="number"
+                                                    inputMode="decimal"
+                                                    min={1}
+                                                    step="any"
+                                                    autoFocus
+                                                    aria-label="Custom amount in US dollars"
+                                                    aria-invalid={!!errors.amount}
+                                                    className="h-10 bg-white"
+                                                    onChange={(e) => setValue("amount", e.target.value === "" ? (undefined as unknown as number) : Number(e.target.value), { shouldValidate: true })}
+                                                />
+                                            </span>
+                                        ) : (
+                                            <span className="mt-1 text-sm text-brand-sage">Enter your own</span>
+                                        )}
+                                    </label>
+                                </div>
+                                {errors.amount && (
+                                    <p role="alert" className="mt-2 text-sm text-red-700">{errors.amount.message}</p>
+                                )}
+                            </fieldset>
+
+                            <Field id="designation" label="Direct my gift to" required>
+                                <select id="designation" className={cn(fieldClass, "h-12 py-0")} {...register("designation")}>
+                                    {meta.designations.map((d) => (
+                                        <option key={d.value} value={d.label}>{d.label}</option>
+                                    ))}
+                                </select>
+                            </Field>
+
+                            <div className="grid gap-5 sm:grid-cols-2">
+                                <Field id="name" label="Full name" required error={errors.name?.message}>
+                                    <Input id="name" autoComplete="name" aria-invalid={!!errors.name} aria-describedby={errors.name ? "name-error" : undefined} {...register("name")} />
+                                </Field>
+                                <Field id="email" label="Email" required error={errors.email?.message}>
+                                    <Input id="email" type="email" autoComplete="email" aria-invalid={!!errors.email} aria-describedby={errors.email ? "email-error" : undefined} {...register("email")} />
+                                </Field>
+                            </div>
+                            <Field id="message" label="Message">
+                                <Textarea id="message" rows={3} className="min-h-[96px]" placeholder="e.g. a dedication, or a note for our team" {...register("message")} />
+                            </Field>
+
+                            <p className="rounded-2xl border border-brand-sand bg-brand-cream p-4 text-sm italic leading-6 text-brand-sage">{meta.transparencyNote}</p>
+
+                            <FormError error={error} />
+
+                            <Honeypot {...register("company")} />
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                <Button type="submit" size="lg" disabled={isSubmitting} className="w-full sm:w-auto">
+                                    {isSubmitting ? "Sending…" : givingOpen ? "Confirm donation" : "Pledge my support"}
+                                    {summary && !isSubmitting && <span className="rounded-full bg-brand-forest/10 px-2 py-0.5">{summary}</span>}
+                                    {!isSubmitting && <ArrowRight className="h-4 w-4" aria-hidden="true" />}
+                                </Button>
+                                <p className="text-xs text-brand-sage">
+                                    {givingOpen ? "This form notifies our team. Payment details are shown alongside." : "No payment is taken today."}
+                                </p>
+                            </div>
+                        </form>
+                    )}
+                </div>
+
+                {/* Sidebar */}
+                <aside className="space-y-6 lg:sticky lg:top-28">
+                    <div className="rounded-3xl bg-brand-forest p-7 text-brand-ivory">
+                        <h3 className="font-display text-xl font-semibold">Ways to give</h3>
+                        <p className="mt-2 text-sm text-brand-ivory/75">
+                            {activeMethods.length > 0
+                                ? "Use one of the methods below and mention “Zakat” or “General” in your reference."
+                                : "Donation details are coming soon. Pledge today and we'll send them to you directly."}
+                        </p>
+                        <ul className="mt-5 space-y-3">
+                            {meta.paymentMethods.map((method) => (
+                                <PaymentMethod key={method.name} {...method} />
+                            ))}
+                        </ul>
+                    </div>
+
+                    <div className="rounded-3xl border border-brand-sand bg-white p-7">
+                        <h3 className="flex items-center gap-2 font-display text-xl font-semibold text-brand-forest">
+                            <Lock className="h-5 w-5 text-brand-gold" aria-hidden="true" />
+                            {meta.transparencyPromise.title}
+                        </h3>
+                        <ul className="mt-5 space-y-3">
+                            {meta.transparencyPromise.items.map((item) => (
+                                <li key={item} className="flex items-start gap-2.5 text-sm text-brand-sage">
+                                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand-pine" aria-hidden="true" />
+                                    {item}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                </aside>
+            </div>
+        </Container>
     );
 }

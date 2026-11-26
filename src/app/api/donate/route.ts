@@ -1,42 +1,34 @@
-import { NextResponse } from 'next/server';
-import { z } from 'zod';
+import { NextResponse } from "next/server";
+import { pledgeSchema } from "@/lib/schemas";
+import { formatFields, sendEmail } from "@/lib/email";
+import { parseBody, sendResultResponse } from "@/lib/api";
 
-// Schema validation for donation intent
-const donationSchema = z.object({
-    name: z.string().min(2),
-    email: z.string().email(),
-    amount: z.string().or(z.number()),
-    program: z.string().optional(),
-    message: z.string().optional(),
-});
+const usd = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 });
 
+// Records a donation pledge / intent and notifies the team by email.
+// No payment is taken here; the donor is contacted with payment details.
 export async function POST(request: Request) {
-    try {
-        const body = await request.json();
+    const parsed = await parseBody(request, pledgeSchema);
+    if ("response" in parsed) return parsed.response;
+    const data = parsed.data;
 
-        // Validate request body
-        const data = donationSchema.parse(body);
+    if (data.company) return NextResponse.json({ success: true });
 
-        // In a real application, you would:
-        // 1. Save to database
-        // 2. Send email notification to admin
-        // 3. Send confirmation email to donor
+    const fund = data.fund === "zakat" ? "Zakat" : "General";
+    const amount = `${usd.format(data.amount)}${data.frequency === "monthly" ? " / month" : ""}`;
 
-        console.log('Donation Intent Received:', data);
+    const result = await sendEmail({
+        subject: `[Pledge] ${amount} ${fund} from ${data.name}`,
+        replyTo: data.email,
+        text: `${formatFields({
+            Name: data.name,
+            Email: data.email,
+            Fund: fund,
+            Amount: amount,
+            Frequency: data.frequency === "monthly" ? "Monthly" : "One-time",
+            Designation: data.designation,
+        })}${data.message ? `\n\nMessage:\n${data.message}` : ""}\n\n— Pledge submitted on the Donate page. Reply to this email to send the donor payment details.`,
+    });
 
-        // Simulate email sending delay
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        return NextResponse.json({
-            success: true,
-            message: "Thank you for your donation intent. We will contact you shortly."
-        });
-
-    } catch (error) {
-        console.error('Donation error:', error);
-        return NextResponse.json(
-            { error: 'Invalid request details' },
-            { status: 400 }
-        );
-    }
+    return sendResultResponse(result);
 }

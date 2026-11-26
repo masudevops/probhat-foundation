@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { cache, type ReactElement } from "react";
 import { compileMDX } from "next-mdx-remote/rsc";
 
 const rootDirectory = path.join(process.cwd(), "content");
@@ -11,53 +12,58 @@ export interface PostMeta {
     date?: string;
     author?: string;
     summary?: string;
+    description?: string;
     image?: string;
+    coverImage?: string;
     tags?: string[];
-    layout?: string;
     order?: number;
     featured?: boolean;
     icon?: string;
-    description?: string;
-    [key: string]: any;
+    pillar?: string;
+    status?: string;
+    location?: string;
 }
 
-export const getPostBySlug = async (slug: string, directory: string): Promise<{ meta: PostMeta, content: any }> => {
+async function compile<T>(directory: string, slug: string) {
     const realSlug = slug.replace(/\.mdx$/, "");
     const filePath = path.join(rootDirectory, directory, `${realSlug}.mdx`);
-
     const fileContent = fs.readFileSync(filePath, "utf8");
 
-    const { frontmatter, content } = await compileMDX<Omit<PostMeta, "slug">>({
+    const { frontmatter, content } = await compileMDX<T>({
         source: fileContent,
         options: { parseFrontmatter: true },
     });
 
-    return { meta: { ...frontmatter, slug: realSlug } as PostMeta, content };
-};
+    return { slug: realSlug, frontmatter, content };
+}
 
-export const getAllPosts = async (directory: string) => {
-    const files = fs.readdirSync(path.join(rootDirectory, directory));
+export const getPostBySlug = cache(async (slug: string, directory: string): Promise<{ meta: PostMeta; content: ReactElement }> => {
+    const { slug: realSlug, frontmatter, content } = await compile<Omit<PostMeta, "slug">>(directory, slug);
+    return { meta: { ...frontmatter, slug: realSlug }, content };
+});
 
-    let posts = [];
+/** All posts in a content folder, sorted by `order`, then newest `date` first. Drafts are skipped. */
+export const getAllPosts = cache(async (directory: string): Promise<PostMeta[]> => {
+    const files = fs.readdirSync(path.join(rootDirectory, directory)).filter((f) => f.endsWith(".mdx"));
+    const posts = await Promise.all(files.map(async (file) => (await getPostBySlug(file, directory)).meta));
 
-    for (const file of files) {
-        const { meta } = await getPostBySlug(file, directory);
-        posts.push(meta);
-    }
+    return posts
+        .filter((post) => post.status?.toLowerCase() !== "draft")
+        .sort((a, b) => {
+            if (typeof a.order === "number" && typeof b.order === "number") return a.order - b.order;
+            if (a.date && b.date) return new Date(b.date).getTime() - new Date(a.date).getTime();
+            return 0;
+        });
+});
 
-    return posts.sort((a, b) => {
-        // Sort by order if available
-        if (typeof a.order === 'number' && typeof b.order === 'number') {
-            return a.order - b.order;
-        }
-        // Otherwise sort by date if available
-        if (a.date && b.date) {
-            return new Date(b.date).getTime() - new Date(a.date).getTime();
-        }
-        return 0;
-    });
-};
+/** Structured page copy from content/pages/<page>.mdx frontmatter. */
+export const getPageContent = cache(async <T extends object>(page: string): Promise<{ meta: T; content: ReactElement }> => {
+    const { frontmatter, content } = await compile<T>("pages", page);
+    return { meta: frontmatter, content };
+}) as <T extends object>(page: string) => Promise<{ meta: T; content: ReactElement }>;
 
-export const getPageContent = async (page: string) => {
-    return getPostBySlug(page, "pages");
+/** True if a file exists under /public (used to skip missing cover images). */
+export function publicFileExists(src?: string): src is string {
+    if (!src || !src.startsWith("/")) return false;
+    return fs.existsSync(path.join(process.cwd(), "public", src));
 }

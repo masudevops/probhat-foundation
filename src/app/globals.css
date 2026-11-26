@@ -2,39 +2,38 @@
 @tailwind components;
 @tailwind utilities;
 
+/* shadcn-style tokens, mapped onto the brand palette in tailwind.config.ts */
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 40 86% 97%; /* brand.cream */
+    --foreground: 111 45% 9%; /* brand.ink */
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 111 45% 9%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 111 45% 9%;
 
-    --primary: 26 90% 62%;
-    /* Softer Warm Accent #F29B4B for CTAs */
-    --primary-foreground: 210 40% 98%;
+    --primary: 39 80% 55%; /* brand.amber */
+    --primary-foreground: 149 43% 10%; /* brand.forest */
 
-    --secondary: 213 78% 24%;
-    /* Deeper Nonprofit Blue #0B3566 */
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 149 43% 10%; /* brand.forest */
+    --secondary-foreground: 37 47% 94%; /* brand.ivory */
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 37 47% 94%;
+    --muted-foreground: 138 12% 33%; /* brand.sage */
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 37 47% 94%;
+    --accent-foreground: 149 43% 10%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 72% 45%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 26 90% 62%;
+    --border: 38 45% 88%; /* brand.sand */
+    --input: 38 45% 88%;
+    --ring: 39 80% 55%;
 
-    --radius: 0.5rem;
+    --radius: 1rem;
   }
 }
 
@@ -46,8 +45,31 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  ::selection {
+    @apply bg-brand-amber/30 text-brand-forest;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-brand-amber ring-offset-2 ring-offset-background;
+  }
 }
 
-.font-bengali {
-  font-family: var(--font-bengali), sans-serif;
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
 }

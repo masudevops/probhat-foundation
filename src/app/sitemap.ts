@@ -1,38 +1,41 @@
 import { MetadataRoute } from 'next';
 import { getAllPosts } from '@/lib/mdx';
+import { siteUrl } from '@/lib/site';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://probhatfoundation.org';
+    const staticRoutes: { path: string; priority: number }[] = [
+        { path: '', priority: 1 },
+        { path: '/donate', priority: 0.9 },
+        { path: '/about', priority: 0.8 },
+        { path: '/programs', priority: 0.8 },
+        { path: '/pipeline', priority: 0.8 },
+        { path: '/get-involved', priority: 0.8 },
+        { path: '/updates', priority: 0.7 },
+        { path: '/contact', priority: 0.7 },
+        { path: '/initiatives', priority: 0.6 },
+        { path: '/reports', priority: 0.5 },
+    ];
 
-    // Static pages
-    const routes = [
-        '',
-        '/about',
-        '/programs',
-        '/donate',
-        '/contact',
-    ].map((route) => ({
-        url: `${baseUrl}${route}`,
+    const routes = staticRoutes.map(({ path, priority }) => ({
+        url: `${siteUrl}${path}`,
         lastModified: new Date(),
         changeFrequency: 'monthly' as const,
-        priority: route === '' ? 1 : 0.8,
+        priority,
     }));
 
-    // Dynamic pages (Programs)
     const programs = await getAllPosts('programs');
-    const programRoutes = programs.map((program: any) => ({
-        url: `${baseUrl}/programs/${program.slug}`,
+    const programRoutes = programs.map((program) => ({
+        url: `${siteUrl}/programs/${program.slug}`,
         lastModified: new Date(),
-        changeFrequency: 'weekly' as const,
+        changeFrequency: 'monthly' as const,
         priority: 0.7,
     }));
 
-    // Dynamic pages (Updates)
     const updates = await getAllPosts('updates');
-    const updateRoutes = updates.map((update: any) => ({
-        url: `${baseUrl}/updates/${update.slug}`,
-        lastModified: new Date(update.date),
-        changeFrequency: 'weekly' as const,
+    const updateRoutes = updates.map((update) => ({
+        url: `${siteUrl}/updates/${update.slug}`,
+        lastModified: update.date ? new Date(update.date) : new Date(),
+        changeFrequency: 'yearly' as const,
         priority: 0.6,
     }));
 

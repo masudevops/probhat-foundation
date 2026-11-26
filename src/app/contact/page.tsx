@@ -1,103 +1,95 @@
+import { Facebook, Instagram, Linkedin, Mail, MapPin, Phone, type LucideIcon } from "lucide-react";
 import { Container, Section } from "@/components/ui/common";
+import { PageHero, SectionHeading, cardClass } from "@/components/ui/brand";
 import { ContactForm } from "@/components/forms/ContactForm";
 import { getPageContent } from "@/lib/mdx";
-import { Mail, MapPin, Phone, Facebook, Instagram, Linkedin } from "lucide-react";
-import Link from "next/link";
-import { Metadata } from 'next';
+import { siteConfig, socialLinks } from "@/lib/site";
+import type { ContactContent } from "@/lib/content-types";
+import { cn } from "@/lib/utils";
 
-export const metadata: Metadata = {
-    title: "Contact Us",
-    description: "Get in touch with Probhat Foundation. We are here to answer your questions and listen to your feedback.",
-};
+const socialIcons: Record<string, LucideIcon> = { Facebook, Instagram, LinkedIn: Linkedin };
 
-export default async function ContactPage() {
-    const { meta } = await getPageContent("contact");
+export async function generateMetadata() {
+  const { meta } = await getPageContent<ContactContent>("contact");
+  return { title: meta.title, description: meta.description };
+}
 
-    return (
-        <div className="flex flex-col min-h-screen">
-            <div className="bg-navy-deep py-20 text-center">
-                <Container>
-                    <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl mb-6">Contact Us</h1>
-                    <p className="mt-4 text-xl text-gray-300 max-w-2xl mx-auto">
-                        {meta.description}
-                    </p>
-                </Container>
+export default async function ContactPage({ searchParams }: { searchParams: Promise<{ subject?: string }> }) {
+  const { meta } = await getPageContent<ContactContent>("contact");
+  const { subject } = await searchParams;
+  const { hero, details, form } = meta;
+  const defaultSubject = form.subjects.find((s) => s.toLowerCase() === subject?.toLowerCase());
+
+  return (
+    <div className="flex flex-col">
+      <PageHero eyebrow={hero.eyebrow} title={hero.title} description={hero.description} />
+
+      <Section>
+        <Container>
+          <div className="grid gap-10 lg:grid-cols-[1.3fr_0.7fr] lg:items-start">
+            <div className={cn(cardClass, "p-6 sm:p-10")}>
+              <h2 className="font-display text-2xl font-semibold text-brand-forest">{form.title}</h2>
+              <div className="mt-6">
+                <ContactForm subjects={form.subjects} defaultSubject={defaultSubject} />
+              </div>
             </div>
 
-            <Section className="bg-white">
-                <Container>
-                    <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 lg:gap-16">
-                        {/* Contact Form */}
-                        <div className="lg:col-span-3">
-                            <h2 className="text-2xl font-bold text-navy-deep mb-6">Send us a Message</h2>
-                            <p className="text-gray-600 mb-8">
-                                Have a question or want to get involved? Fill out the form below and we'll get back to you as soon as possible.
-                            </p>
-                            <ContactForm />
-                        </div>
-
-                        {/* Contact Info */}
-                        <div className="lg:col-span-2 space-y-8">
-                            <div className="bg-light-gray p-8 rounded-xl border border-gray-100 h-full">
-                                <h3 className="text-xl font-bold text-navy-deep mb-6">Get in Touch</h3>
-
-                                <div className="space-y-6">
-                                    <div className="flex items-start gap-4">
-                                        <div className="bg-white p-2 rounded-full border border-gray-200">
-                                            <Mail className="h-5 w-5 text-sunrise-orange" />
-                                        </div>
-                                        <div>
-                                            <p className="font-semibold text-navy-deep">Email</p>
-                                            <a href={`mailto:${meta.email}`} className="text-gray-600 hover:text-sunrise-orange">{meta.email}</a>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-start gap-4">
-                                        <div className="bg-white p-2 rounded-full border border-gray-200">
-                                            <Phone className="h-5 w-5 text-sunrise-orange" />
-                                        </div>
-                                        <div>
-                                            <p className="font-semibold text-navy-deep">Phone</p>
-                                            <a href={`tel:${meta.phone}`} className="text-gray-600 hover:text-sunrise-orange">{meta.phone}</a>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-start gap-4">
-                                        <div className="bg-white p-2 rounded-full border border-gray-200">
-                                            <MapPin className="h-5 w-5 text-sunrise-orange" />
-                                        </div>
-                                        <div>
-                                            <p className="font-semibold text-navy-deep">Service Area</p>
-                                            <p className="text-gray-600">{meta.address || "Serving Rural Bangladesh"}</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="border-t border-gray-200 my-8"></div>
-
-                                <h3 className="text-xl font-bold text-navy-deep mb-6">Follow Us</h3>
-                                <div className="flex gap-4">
-                                    {meta.socials?.facebook && (
-                                        <Link href={meta.socials.facebook} className="bg-white p-3 rounded-full border border-gray-200 hover:border-sunrise-orange hover:text-sunrise-orange transition-colors">
-                                            <Facebook className="h-5 w-5" />
-                                        </Link>
-                                    )}
-                                    {meta.socials?.instagram && (
-                                        <Link href={meta.socials.instagram} className="bg-white p-3 rounded-full border border-gray-200 hover:border-sunrise-orange hover:text-sunrise-orange transition-colors">
-                                            <Instagram className="h-5 w-5" />
-                                        </Link>
-                                    )}
-                                    {meta.socials?.linkedin && (
-                                        <Link href={meta.socials.linkedin} className="bg-white p-3 rounded-full border border-gray-200 hover:border-sunrise-orange hover:text-sunrise-orange transition-colors">
-                                            <Linkedin className="h-5 w-5" />
-                                        </Link>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
+            <aside className="rounded-3xl bg-brand-forest p-8 text-brand-ivory">
+              <SectionHeading eyebrow={details.eyebrow} title={details.title} tone="dark" className="[&_h2]:text-2xl" />
+              <ul className="mt-8 space-y-6">
+                {siteConfig.email && (
+                  <li className="flex gap-4">
+                    <Mail className="mt-1 h-5 w-5 shrink-0 text-brand-amber" aria-hidden="true" />
+                    <div>
+                      <p className="text-sm font-semibold uppercase tracking-wider text-brand-ivory/60">Email</p>
+                      <a href={`mailto:${siteConfig.email}`} className="break-all text-lg hover:text-brand-amber">{siteConfig.email}</a>
                     </div>
-                </Container>
-            </Section>
-        </div>
-    );
+                  </li>
+                )}
+                {siteConfig.phone && (
+                  <li className="flex gap-4">
+                    <Phone className="mt-1 h-5 w-5 shrink-0 text-brand-amber" aria-hidden="true" />
+                    <div>
+                      <p className="text-sm font-semibold uppercase tracking-wider text-brand-ivory/60">Phone</p>
+                      <a href={`tel:${siteConfig.phone.replace(/[^+\d]/g, "")}`} className="text-lg hover:text-brand-amber">{siteConfig.phone}</a>
+                    </div>
+                  </li>
+                )}
+                <li className="flex gap-4">
+                  <MapPin className="mt-1 h-5 w-5 shrink-0 text-brand-amber" aria-hidden="true" />
+                  <div>
+                    <p className="text-sm font-semibold uppercase tracking-wider text-brand-ivory/60">Location</p>
+                    <p className="text-lg">{siteConfig.location}</p>
+                  </div>
+                </li>
+              </ul>
+              {socialLinks.length > 0 && (
+                <div className="mt-8 border-t border-white/10 pt-6">
+                  <p className="text-sm font-semibold uppercase tracking-wider text-brand-ivory/60">Follow our work</p>
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    {socialLinks.map((item) => {
+                      const Icon = socialIcons[item.name];
+                      return (
+                        <a
+                          key={item.name}
+                          href={item.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 rounded-full border border-brand-ivory/20 px-4 py-2.5 text-sm font-semibold transition hover:border-brand-amber hover:bg-brand-amber hover:text-brand-forest"
+                        >
+                          <Icon className="h-4 w-4" aria-hidden="true" />
+                          {item.name}
+                          <span className="sr-only">(opens in a new tab)</span>
+                        </a>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </aside>
+          </div>
+        </Container>
+      </Section>
+    </div>
+  );
 }
