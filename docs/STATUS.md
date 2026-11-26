@@ -6,7 +6,7 @@ _Last updated: 2026-11-26_
 
 ### Website redesign (PR #1, live on www.probhatfoundation.org)
 - One forest/gold design system across every page: brand colour tokens in `tailwind.config.ts`, Playfair Display headings, shared components in `src/components/ui/brand.tsx`, Lucide icons instead of emoji.
-- Removed the static prototype's `styles.css` from the app (it was overriding fonts).
+- Stopped importing the static prototype's `styles.css` (it was overriding fonts); the prototype files have since been deleted.
 - Restyled Donate, Updates, Initiatives, Reports and the program/update detail pages, which were still on the old navy/orange theme.
 - Programs page now covers all three pillars and links to each program's detail page; the Scholar Pipeline is a connected timeline; the home page shows the latest updates.
 - Fixed update dates showing one day early for US visitors; new favicon and social share image.
@@ -52,7 +52,7 @@ These are only set for **Production**, so forms on Vercel preview deployments sh
 
 ### Housekeeping
 - [ ] Review `.env.example` before committing it: `.gitignore` now allows it (`!.env.example`), but it still contains old, unused variables (`SMTP_*`, `ADMIN_EMAIL`, `NEXT_PUBLIC_GA_ID`, `NEXT_PUBLIC_SITE_NAME`). Remove them or make sure they hold placeholders only, then commit. This repo is public.
-- [ ] Decide on the untracked static prototype in the repo root (`*.html`, `main.js`, `styles.css`): delete, or move to `design/prototype/`.
+- [x] Deleted the untracked static HTML prototype from the repo root (2026-11-26).
 - [ ] Refresh `README.md`: its content guide still describes the old site structure. Point it at this file and `CLAUDE.md`.
 - [ ] Add basic tests (form API validation, content loading).
 
